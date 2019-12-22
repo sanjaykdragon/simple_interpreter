@@ -27,7 +27,7 @@ void c_interpreter::execute_program()
 		const std::optional<c_operation> previous_operation = current_pos - 1 < 0 ? c_operation{} : stack.at(current_pos - 1);
 		const auto current_operation = stack.at(current_pos);
 		const std::optional<c_operation> next_operation = current_pos + 1 >= stack.size() ? c_operation{} : stack.at(current_pos + 1);
-		auto result = execute_operation(previous_operation, current_operation, next_operation);
+		const auto result = execute_operation(previous_operation, current_operation, next_operation);
 		operations_executed++;
 		if (result == return_codes::end)
 		{
@@ -41,7 +41,7 @@ void c_interpreter::execute_program()
 	std::printf("program ended. stack operations executed: %i, total stack size: %i \n", operations_executed, stack.size());
 }
 
-std::deque<c_operation> c_interpreter::read_file(const std::string filename)
+std::deque<c_operation> c_interpreter::read_file(const std::string& filename) const
 {
 	std::deque<c_operation> new_stack = {};
 	std::fstream script_file;
@@ -89,11 +89,13 @@ c_operation c_interpreter::interpret_string(std::string str) const
 	catch (std::exception& e)
 	{
 		std::printf("[ERROR!] error when converting string to arg (int), got: %s", str_array.at(1).c_str());
+		std::printf("[ERROR!] error info: %s", e.what());
 	}
 	return c_operation{opcodes::nop, 0};
 }
 
-opcodes c_interpreter::get_opcode_from_str(const std::string str) const
+// ReSharper disable once CppMemberFunctionMayBeStatic
+opcodes c_interpreter::get_opcode_from_str(const std::string& str) const
 {
 	const static auto trim = [](const std::string& str) -> std::string //https://stackoverflow.com/questions/25829143/trim-whitespace-from-a-string
 	{

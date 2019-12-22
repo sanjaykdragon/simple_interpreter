@@ -36,7 +36,7 @@ public:
 		return "opcode: " + opcode_to_str() + " arg: " + std::to_string(arg);
 	}
 private:
-	std::string opcode_to_str() const
+	[[nodiscard]] std::string opcode_to_str() const
 	{
 		//bad code
 		switch(opcode)
@@ -82,9 +82,9 @@ public:
 	}
 	void execute_program();
 private:
-	std::deque<c_operation> read_file(std::string filename);
-	c_operation interpret_string(std::string str) const;
-	opcodes get_opcode_from_str(std::string str) const;
+	[[nodiscard]] std::deque<c_operation> read_file(const std::string& filename) const;
+	[[nodiscard]] c_operation interpret_string(std::string str) const;
+	[[nodiscard]] opcodes get_opcode_from_str(const std::string& str) const;
 	
 	using maybe_operation = std::optional<c_operation>;
 	return_codes execute_operation(maybe_operation prev_operation, c_operation current_operation, maybe_operation next_operation);
