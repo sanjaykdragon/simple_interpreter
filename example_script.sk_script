@@ -1,0 +1,5 @@
+iconst 10
+add 0
+iconst 400
+print 0
+end_program 0

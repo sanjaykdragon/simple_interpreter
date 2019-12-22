@@ -1,9 +1,10 @@
 #pragma once
 #include <deque>
-#include <iostream>
 #include <string>
 #include <optional>
 #include <utility>
+#include <filesystem>
+#include <fstream>
 
 
 enum class opcodes
@@ -71,10 +72,9 @@ private:
 class c_interpreter
 {
 public:
-	c_interpreter(std::deque<c_operation> new_stack)
-	{
-		stack = std::move(new_stack);
-	}
+	explicit c_interpreter(std::deque<c_operation> new_stack);
+
+	explicit c_interpreter(std::string filename);
 
 	void set_stack(std::deque<c_operation> new_stack)
 	{
@@ -82,6 +82,9 @@ public:
 	}
 	void execute_program();
 private:
+	std::deque<c_operation> read_file(std::string filename);
+	c_operation interpret_string(std::string str) const;
+	opcodes get_opcode_from_str(std::string str) const;
 	
 	using maybe_operation = std::optional<c_operation>;
 	return_codes execute_operation(maybe_operation prev_operation, c_operation current_operation, maybe_operation next_operation);

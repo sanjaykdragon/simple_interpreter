@@ -1,4 +1,17 @@
 #include "c_interpreter.h"
+#include <regex>
+#include <sstream>
+#include <utility>
+
+c_interpreter::c_interpreter(std::deque<c_operation> new_stack): current_stack_location(0)
+{
+	stack = std::move(new_stack);
+}
+
+c_interpreter::c_interpreter(std::string filename): current_stack_location(0)
+{
+	stack = read_file(std::move(filename));
+}
 
 void c_interpreter::execute_program()
 {
@@ -21,6 +34,92 @@ void c_interpreter::execute_program()
 		current_pos = this->current_stack_location;
 	}
 	std::printf("program ended. stack operations executed: %i, total stack size: %i \n", operations_executed, stack.size());
+}
+
+std::deque<c_operation> c_interpreter::read_file(const std::string filename)
+{
+	std::deque<c_operation> new_stack = {};
+	std::fstream script_file;
+	script_file.open(filename, std::ios::in);
+	if (script_file.is_open()) {
+		std::string current_line;
+		while (std::getline(script_file, current_line)) {
+			//make line lowercase - https://en.cppreference.com/w/cpp/string/byte/tolower
+			std::transform(current_line.begin(), current_line.end(), current_line.begin(),[](unsigned char c) { return std::tolower(c); } );
+			
+			new_stack.push_back(interpret_string(current_line));
+		}
+		script_file.close();
+	}
+	return new_stack;
+}
+
+c_operation c_interpreter::interpret_string(std::string str) const
+{
+	const static auto split_str = [&str](const char delim) -> std::vector<std::string> //https://stackoverflow.com/questions/9435385/split-a-string-using-c11
+	{
+		std::stringstream ss(str);
+		std::string item;
+		std::vector<std::string> elems;
+		while (std::getline(ss, item, delim)) {
+			elems.push_back(std::move(item));
+		}
+		return elems;
+	};
+
+	auto str_array = split_str(' ');
+	if(str_array.size() < 2)
+	{
+		std::printf("error when trying to interpret line: %s, assumed nop \n", str.c_str());
+		return c_operation{ opcodes::nop, 0 };
+	}
+	
+	try
+	{
+		const auto opcode = get_opcode_from_str(str_array.at(0));
+		const auto arg = stoi(str_array.at(1));
+		const auto new_operation = c_operation{ opcode, arg };
+		return new_operation;
+	}
+	catch (std::exception& e)
+	{
+		std::printf("error when converting string to arg (int), got: %s", str_array.at(1).c_str());
+	}
+	return c_operation{opcodes::nop, 0};
+}
+
+opcodes c_interpreter::get_opcode_from_str(const std::string str) const
+{
+	const static auto trim = [](const std::string& str) -> std::string //https://stackoverflow.com/questions/25829143/trim-whitespace-from-a-string
+	{
+		const size_t first = str.find_first_not_of(' ');
+
+		if (first == std::string::npos)
+			return str;
+
+		const size_t last = str.find_last_not_of(' ');
+		return str.substr(first, (last - first + 1));
+	};
+	const auto trimmed_str = trim(str);
+
+	if (trimmed_str == "add")
+		return opcodes::add;
+	else if (trimmed_str == "sub")
+		return opcodes::sub;
+	else if (trimmed_str == "end_program" || trimmed_str == "end" || trimmed_str == "exit")
+		return opcodes::end_program;
+	else if (trimmed_str == "print")
+		return opcodes::print;
+	else if (trimmed_str == "i" || trimmed_str == "int" || trimmed_str == "integer" || trimmed_str == "iconst")
+		return opcodes::const_int;
+	else if (trimmed_str == "jump" || trimmed_str == "jmp")
+		return opcodes::jump;
+	else if (trimmed_str == "jump_if" || trimmed_str == "jmp_if")
+		return opcodes::jump_if;
+	else if (trimmed_str == "nop")
+		return opcodes::nop;
+
+	return opcodes::nop;
 }
 
 return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_operation current_operation, maybe_operation next_operation)
