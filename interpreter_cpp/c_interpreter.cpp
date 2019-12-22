@@ -6,9 +6,9 @@ void c_interpreter::execute_program()
 	for (int current_pos = 0; current_pos < stack.size(); current_pos++)
 	{
 		this->current_stack_location = current_pos;
-		std::optional<c_operation> previous_operation = current_pos - 1 < 0 ? c_operation{} : stack.at(current_pos - 1);
+		const std::optional<c_operation> previous_operation = current_pos - 1 < 0 ? c_operation{} : stack.at(current_pos - 1);
 		const auto current_operation = stack.at(current_pos);
-		std::optional<c_operation> next_operation = current_pos + 1 >= stack.size() ? c_operation{} : stack.at(current_pos + 1);
+		const std::optional<c_operation> next_operation = current_pos + 1 >= stack.size() ? c_operation{} : stack.at(current_pos + 1);
 		auto result = execute_operation(previous_operation, current_operation, next_operation);
 		operations_executed++;
 		if (result == return_codes::end)
