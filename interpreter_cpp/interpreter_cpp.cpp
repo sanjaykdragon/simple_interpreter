@@ -4,6 +4,7 @@ int main()
 {
 	std::printf("interpreter test \n");
 
+	//this is not used because we are loading from file below
 	const std::deque<c_operation> new_stack = {
 		c_operation{opcodes::const_int, 10},
 		c_operation{opcodes::add, 0}, //second arg of add doesn't matter
