@@ -1,6 +1,6 @@
-#include "c_compiler.h"
+#include "c_interpreter.h"
 
-void c_compiler::execute_program()
+void c_interpreter::execute_program()
 {
 	int operations_executed = 0;
 	for (int current_pos = 0; current_pos < stack.size(); current_pos++)
@@ -23,7 +23,7 @@ void c_compiler::execute_program()
 	std::printf("program ended. stack operations executed: %i, total stack size: %i \n", operations_executed, stack.size());
 }
 
-return_codes c_compiler::execute_operation(maybe_operation prev_operation, c_operation current_operation, maybe_operation next_operation)
+return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_operation current_operation, maybe_operation next_operation)
 {
 	if (current_operation.opcode == opcodes::end_program)
 		return return_codes::end;
@@ -113,7 +113,7 @@ return_codes c_compiler::execute_operation(maybe_operation prev_operation, c_ope
 		//0 - false, 1 - true
 		if (!is_bool)
 		{
-			std::printf("called jump_if, but previous operation's arg was not a 0 or 1 \n");
+			std::printf("called jump_if, but previous operation's arg was not a 0 or 1, or was not an int \n");
 			return return_codes::error;
 		}
 
@@ -133,7 +133,7 @@ return_codes c_compiler::execute_operation(maybe_operation prev_operation, c_ope
 	return return_codes::success;
 }
 
-void c_compiler::result_handler(return_codes result)
+void c_interpreter::result_handler(return_codes result)
 {
 	if(result == return_codes::error)
 	{

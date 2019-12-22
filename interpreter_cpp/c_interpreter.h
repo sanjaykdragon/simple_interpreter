@@ -68,10 +68,10 @@ private:
 	}
 };
 
-class c_compiler
+class c_interpreter
 {
 public:
-	c_compiler(std::deque<c_operation> new_stack)
+	c_interpreter(std::deque<c_operation> new_stack)
 	{
 		stack = std::move(new_stack);
 	}

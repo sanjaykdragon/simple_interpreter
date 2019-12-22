@@ -15,15 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="compiler_cpp.cpp">
+    <ClCompile Include="c_interpreter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c_compiler.cpp">
+    <ClCompile Include="interpreter_cpp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="c_compiler.h">
+    <ClInclude Include="c_interpreter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
