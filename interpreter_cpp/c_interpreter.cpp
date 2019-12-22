@@ -8,14 +8,14 @@ c_interpreter::c_interpreter(std::deque<c_operation> new_stack): current_stack_l
 	stack = std::move(new_stack);
 }
 
-c_interpreter::c_interpreter(std::string filename): current_stack_location(0)
+c_interpreter::c_interpreter(const std::string& filename): current_stack_location(0)
 {
 	if(!std::filesystem::exists(filename))
 	{
 		std::printf("[ERROR!] file: %s doesn't exist. \n", filename.c_str());
 		return;
 	}
-	stack = read_file(std::move(filename));
+	stack = read_file(filename);
 }
 
 void c_interpreter::execute_program()
@@ -34,8 +34,7 @@ void c_interpreter::execute_program()
 			std::printf("called opcodes::end_program, ended gracefully \n");
 			break;
 		}
-		else
-			result_handler(result);
+		result_handler(result);
 		current_pos = this->current_stack_location;
 	}
 	std::printf("program ended. stack operations executed: %i, total stack size: %i \n", operations_executed, stack.size());

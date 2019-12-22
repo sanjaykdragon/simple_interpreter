@@ -74,7 +74,7 @@ class c_interpreter
 public:
 	explicit c_interpreter(std::deque<c_operation> new_stack);
 
-	explicit c_interpreter(std::string filename);
+	explicit c_interpreter(const std::string& filename);
 
 	void set_stack(std::deque<c_operation> new_stack)
 	{
