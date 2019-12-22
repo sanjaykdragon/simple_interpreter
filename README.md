@@ -3,8 +3,6 @@
 ### description
 a simple interpreter, basically a custom language
 
-I have no idea if this is even proper, but it is something nice I guess.
-
 
 ### info / credits
 written in C++, using C++17 STL
