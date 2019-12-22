@@ -10,6 +10,11 @@ c_interpreter::c_interpreter(std::deque<c_operation> new_stack): current_stack_l
 
 c_interpreter::c_interpreter(std::string filename): current_stack_location(0)
 {
+	if(!std::filesystem::exists(filename))
+	{
+		std::printf("[ERROR!] file: %s doesn't exist. \n", filename.c_str());
+		return;
+	}
 	stack = read_file(std::move(filename));
 }
 
@@ -70,7 +75,7 @@ c_operation c_interpreter::interpret_string(std::string str) const
 	auto str_array = split_str(' ');
 	if(str_array.size() < 2)
 	{
-		std::printf("error when trying to interpret line: %s, assumed nop \n", str.c_str());
+		std::printf("[ERROR!] error when trying to interpret line: %s, assumed nop \n", str.c_str());
 		return c_operation{ opcodes::nop, 0 };
 	}
 	
@@ -83,7 +88,7 @@ c_operation c_interpreter::interpret_string(std::string str) const
 	}
 	catch (std::exception& e)
 	{
-		std::printf("error when converting string to arg (int), got: %s", str_array.at(1).c_str());
+		std::printf("[ERROR!] error when converting string to arg (int), got: %s", str_array.at(1).c_str());
 	}
 	return c_operation{opcodes::nop, 0};
 }
