@@ -11,10 +11,10 @@ enum class opcodes
 	end_program,
 	print,
 	const_int,
-	const_string,
 	add,
 	sub,
 	jump,
+	jump_if,
 	nop
 };
 
@@ -49,9 +49,6 @@ private:
 		case opcodes::const_int:
 			return "const int";
 			break;
-		case opcodes::const_string:
-			return "const string";
-			break;
 		case opcodes::add:
 			return "add";
 			break;
@@ -60,6 +57,9 @@ private:
 			break;
 		case opcodes::jump:
 			return "jump";
+			break;
+		case opcodes::jump_if:
+			return "jump_if";
 			break;
 		default:
 			return "unknown opcode";

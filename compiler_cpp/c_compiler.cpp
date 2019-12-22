@@ -78,7 +78,7 @@ return_codes c_compiler::execute_operation(maybe_operation prev_operation, c_ope
 		}
 
 		const auto prev_opcode = prev_operation.value().opcode;
-		const bool is_printable = prev_opcode == opcodes::const_int || prev_opcode == opcodes::const_string;
+		const bool is_printable = prev_opcode == opcodes::const_int;
 
 		if(!is_printable)
 		{
@@ -98,6 +98,37 @@ return_codes c_compiler::execute_operation(maybe_operation prev_operation, c_ope
 			return return_codes::error;
 		}
 		this->current_stack_location = new_stack_location - 1;
+	}
+	else if (current_operation.opcode == opcodes::jump_if)
+	{
+		if (!has_pre_operation)
+		{
+			std::printf("called jump_if, but didn't have a previous operation \n");
+			return return_codes::error;
+		}
+
+		const auto prev_opcode = prev_operation.value().opcode;
+		const auto prev_opcode_val = prev_operation.value().arg;
+		const bool is_bool = prev_opcode == opcodes::const_int && (prev_opcode_val == 0 || prev_opcode_val == 1);
+		//0 - false, 1 - true
+		if (!is_bool)
+		{
+			std::printf("called jump_if, but previous operation's arg was not a 0 or 1 \n");
+			return return_codes::error;
+		}
+
+		//if opcode is true
+		if (prev_opcode_val == 1)
+		{
+			const auto new_stack_location = this->current_stack_location + current_operation.arg;
+			const bool is_valid_jump = new_stack_location > 0 && new_stack_location < this->stack.size();
+			if (!is_valid_jump)
+			{
+				std::printf("called jump_if into an invalid location \n");
+				return return_codes::error;
+			}
+			this->current_stack_location = new_stack_location - 1;
+		}
 	}
 	return return_codes::success;
 }

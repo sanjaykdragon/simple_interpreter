@@ -25,7 +25,8 @@ int main()
 		c_operation{opcodes::const_int, 132345976},
 		c_operation{opcodes::print, 0},
 
-		c_operation{opcodes::jump, -3} //jumps back to end_program
+		c_operation{opcodes::const_int, 1},
+		c_operation{opcodes::jump_if, -4} //jumps back to end_program
 	};
 
 	//create a "new program" with a new stack
