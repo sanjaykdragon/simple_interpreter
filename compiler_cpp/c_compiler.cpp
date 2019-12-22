@@ -12,7 +12,10 @@ void c_compiler::execute_program()
 		auto result = execute_operation(previous_operation, current_operation, next_operation);
 		operations_executed++;
 		if (result == return_codes::end)
+		{
+			std::printf("called opcodes::end_program, ended gracefully \n");
 			break;
+		}
 		else
 			result_handler(result);
 		current_pos = this->current_stack_location;
@@ -62,7 +65,9 @@ return_codes c_compiler::execute_operation(maybe_operation prev_operation, c_ope
 			const auto operation_result = c_operation{ opcodes::const_int, prev_num - next_num }; //do the operation
 			stack.insert(stack.begin() + current_stack_location - 1, operation_result); //put the result back onto the stack
 		}
-		current_stack_location -= 2; //move stack back by 2 because the delta of deleted commands is 2 (removed 3 operations, then inserted one).
+		const auto nop = c_operation{ opcodes::nop, 0 };
+		stack.insert(stack.begin() + current_stack_location - 1, nop);
+		stack.insert(stack.begin() + current_stack_location - 1, nop); //I do this so the stack keeps its original size
 	}
 	else if(current_operation.opcode == opcodes::print)
 	{
@@ -83,6 +88,17 @@ return_codes c_compiler::execute_operation(maybe_operation prev_operation, c_ope
 		
 		std::printf("print result: %i \n", prev_operation.value().arg);
 	}
+	else if(current_operation.opcode == opcodes::jump)
+	{
+		const auto new_stack_location = this->current_stack_location + current_operation.arg;
+		const bool is_valid_jump = new_stack_location > 0 && new_stack_location < this->stack.size();
+		if(!is_valid_jump)
+		{
+			std::printf("called jump into an invalid location \n");
+			return return_codes::error;
+		}
+		this->current_stack_location = new_stack_location - 1;
+	}
 	return return_codes::success;
 }
 
@@ -90,7 +106,7 @@ void c_compiler::result_handler(return_codes result)
 {
 	if(result == return_codes::error)
 	{
-		std::printf("error thrown at stack location %i \n", this->current_stack_location);
+		std::printf("error thrown at stack location %i, opcode at this location is %s \n", this->current_stack_location, this->stack.at(this->current_stack_location).to_string().c_str());
 		return;
 	}
 }

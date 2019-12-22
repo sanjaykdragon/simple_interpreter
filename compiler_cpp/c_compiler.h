@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <optional>
+#include <utility>
 
 
 enum class opcodes
@@ -12,7 +13,9 @@ enum class opcodes
 	const_int,
 	const_string,
 	add,
-	sub
+	sub,
+	jump,
+	nop
 };
 
 enum class return_codes
@@ -55,6 +58,9 @@ private:
 		case opcodes::sub:
 			return "sub";
 			break;
+		case opcodes::jump:
+			return "jump";
+			break;
 		default:
 			return "unknown opcode";
 			break;
@@ -67,12 +73,12 @@ class c_compiler
 public:
 	c_compiler(std::deque<c_operation> new_stack)
 	{
-		stack = new_stack;
+		stack = std::move(new_stack);
 	}
 
 	void set_stack(std::deque<c_operation> new_stack)
 	{
-		stack = new_stack;
+		stack = std::move(new_stack);
 	}
 	void execute_program();
 private:
