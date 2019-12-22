@@ -87,8 +87,8 @@ c_operation c_interpreter::interpret_string(std::string str) const
 	}
 	catch (std::exception& e)
 	{
-		std::printf("[ERROR!] error when converting string to arg (int), got: %s", str_array.at(1).c_str());
-		std::printf("[ERROR!] error info: %s", e.what());
+		std::printf("[ERROR!] error when converting string to arg (int), got: %s \n", str_array.at(1).c_str());
+		std::printf("[ERROR!] error info: %s \n", e.what());
 	}
 	return c_operation{opcodes::nop, 0};
 }

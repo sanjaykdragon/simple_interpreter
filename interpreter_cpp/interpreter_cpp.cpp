@@ -1,6 +1,6 @@
 #include "c_interpreter.h"
 
-int main()
+int main(int argc, char* argv[])
 {
 	std::printf("interpreter test \n");
 
@@ -28,9 +28,23 @@ int main()
 
 	//create a "new program" with a new stack
 	//c_interpreter interpreter = c_interpreter(new_stack);
-	c_interpreter interpreter = c_interpreter("example_script.sk_script");
+
+	c_interpreter interpreter = c_interpreter(new_stack);
+	
+	if (argc != 0)
+	{
+		if(!std::filesystem::exists(argv[1]))
+		{
+			std::printf("%s doesn't exist.", argv[1]);
+			return 0;
+		}
+		interpreter = c_interpreter(argv[1]);
+	}
+	else
+		interpreter = c_interpreter("example_script.sk_script");
 
 	interpreter.execute_program();
 
 	system("pause");
+	return 0;
 }
