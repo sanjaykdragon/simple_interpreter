@@ -14,7 +14,7 @@ jump / jump_if / copy:
 
 all of these are a bit odd, the arguments they are assigned are actually + 1 of the argument (see void c_interpreter::execute_program()::21) because of the for loop.
 
-add / print / sub / end_program / nop:
+add / print / sub / end_program / nop / test_eq:
 
 none of these check their arguments
 
