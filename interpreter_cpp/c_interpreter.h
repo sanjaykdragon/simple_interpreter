@@ -16,7 +16,8 @@ enum class opcodes
 	jump,
 	jump_if,
 	nop,
-	copy
+	copy,
+	test_eq
 };
 
 enum class return_codes
@@ -64,6 +65,9 @@ private:
 			break;
 		case opcodes::copy:
 			return "copy";
+			break;
+		case opcodes::test_eq:
+			return "test_eq";
 			break;
 		default:
 			return "unknown opcode";

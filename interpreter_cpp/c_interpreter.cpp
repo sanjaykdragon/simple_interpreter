@@ -4,14 +4,14 @@
 #include <utility>
 #include <fstream>
 
-c_interpreter::c_interpreter(std::deque<c_operation> new_stack): current_stack_location(0)
+c_interpreter::c_interpreter(std::deque<c_operation> new_stack) : current_stack_location(0)
 {
 	stack = std::move(new_stack);
 }
 
-c_interpreter::c_interpreter(const std::string& filename): current_stack_location(0)
+c_interpreter::c_interpreter(const std::string& filename) : current_stack_location(0)
 {
-	if(!std::filesystem::exists(filename))
+	if (!std::filesystem::exists(filename))
 	{
 		std::printf("[ERROR!] file: %s doesn't exist. \n", filename.c_str());
 		return;
@@ -43,7 +43,7 @@ void c_interpreter::execute_program()
 
 void c_interpreter::print_stack()
 {
-	for(auto op : this->stack)
+	for (auto op : this->stack)
 	{
 		std::printf("%s \n", op.to_string().c_str());
 	}
@@ -58,7 +58,7 @@ std::deque<c_operation> c_interpreter::read_file(const std::string& filename) co
 		std::string current_line;
 		while (std::getline(script_file, current_line)) {
 			//make line lowercase - https://en.cppreference.com/w/cpp/string/byte/tolower
-			std::transform(current_line.begin(), current_line.end(), current_line.begin(),[](unsigned char c) { return std::tolower(c); } );
+			std::transform(current_line.begin(), current_line.end(), current_line.begin(), [](unsigned char c) { return std::tolower(c); });
 
 			const static auto trim = [](const std::string& str) -> std::string //https://stackoverflow.com/questions/25829143/trim-whitespace-from-a-string
 			{
@@ -73,7 +73,7 @@ std::deque<c_operation> c_interpreter::read_file(const std::string& filename) co
 
 			if (trim(current_line).empty()) //if line is completely whitespace
 				continue;
-			
+
 			new_stack.push_back(interpret_string(current_line));
 		}
 		script_file.close();
@@ -95,12 +95,12 @@ c_operation c_interpreter::interpret_string(std::string str) const
 	};
 
 	auto str_array = split_str(' ');
-	if(str_array.size() < 2)
+	if (str_array.size() < 2)
 	{
 		std::printf("[ERROR!] error when trying to interpret line: %s, assumed nop \n", str.c_str());
 		return c_operation{ opcodes::nop, 0 };
 	}
-	
+
 	try
 	{
 		const auto opcode = get_opcode_from_str(str_array.at(0));
@@ -108,12 +108,12 @@ c_operation c_interpreter::interpret_string(std::string str) const
 		const auto new_operation = c_operation{ opcode, arg };
 		return new_operation;
 	}
-	catch (std::exception& e)
+	catch (std::exception & e)
 	{
 		std::printf("[ERROR!] error when converting string to arg (int), got: %s \n", str_array.at(1).c_str());
 		std::printf("[ERROR!] error info: %s \n", e.what());
 	}
-	return c_operation{opcodes::nop, 0};
+	return c_operation{ opcodes::nop, 0 };
 }
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
@@ -149,6 +149,8 @@ opcodes c_interpreter::get_opcode_from_str(const std::string& str) const
 		return opcodes::nop;
 	else if (trimmed_str == "copy")
 		return opcodes::copy;
+	else if (trimmed_str == "test_eq" || trimmed_str == "==")
+		return opcodes::test_eq;
 
 	return opcodes::nop;
 }
@@ -161,7 +163,7 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 	const bool has_pre_operation = prev_operation.has_value();
 	const bool has_next_operation = next_operation.has_value();
 	const bool has_double_operations = has_pre_operation && has_next_operation;
-	
+
 	if (current_operation.opcode == opcodes::add || current_operation.opcode == opcodes::sub)
 	{
 		const std::string op_type = current_operation.opcode == opcodes::add ? "add" : "sub";
@@ -178,7 +180,7 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 			std::printf("called %s, but not both operations are numbers \n", op_type.c_str());
 			return return_codes::error;
 		}
-		
+
 		stack.erase(stack.begin() + current_stack_location);
 		stack.erase(stack.begin() + current_stack_location - 1);
 		stack.erase(stack.begin() + current_stack_location - 1); //remove the 3 prev operations - const_int (n1), add, const_int (n2)
@@ -190,7 +192,7 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 			const auto operation_result = c_operation{ opcodes::const_int, prev_num + next_num }; //do the operation
 			stack.insert(stack.begin() + current_stack_location - 1, operation_result); //put the result back onto the stack
 		}
-		else if(current_operation.opcode == opcodes::sub)
+		else if (current_operation.opcode == opcodes::sub)
 		{
 			const auto operation_result = c_operation{ opcodes::const_int, prev_num - next_num }; //do the operation
 			stack.insert(stack.begin() + current_stack_location - 1, operation_result); //put the result back onto the stack
@@ -199,9 +201,9 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 		stack.insert(stack.begin() + current_stack_location - 1, nop);
 		stack.insert(stack.begin() + current_stack_location - 1, nop); //I do this so the stack keeps its original size
 	}
-	else if(current_operation.opcode == opcodes::print)
+	else if (current_operation.opcode == opcodes::print)
 	{
-		if(!has_pre_operation)
+		if (!has_pre_operation)
 		{
 			std::printf("called print, but didn't have a previous operation \n");
 			return return_codes::error;
@@ -210,19 +212,19 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 		const auto prev_opcode = prev_operation.value().opcode;
 		const bool is_printable = prev_opcode == opcodes::const_int;
 
-		if(!is_printable)
+		if (!is_printable)
 		{
 			std::printf("called print, but previous operation's opcode was not of a printable type. \n");
 			return return_codes::error;
 		}
-		
+
 		std::printf("print result: %i \n", prev_operation.value().arg);
 	}
-	else if(current_operation.opcode == opcodes::jump)
+	else if (current_operation.opcode == opcodes::jump)
 	{
 		const auto new_stack_location = this->current_stack_location + current_operation.arg;
 		const bool is_valid_jump = new_stack_location > 0 && new_stack_location < this->stack.size();
-		if(!is_valid_jump)
+		if (!is_valid_jump)
 		{
 			std::printf("called jump into an invalid location \n");
 			return return_codes::error;
@@ -260,7 +262,7 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 			this->current_stack_location = new_stack_location;
 		}
 	}
-	else if(current_operation.opcode == opcodes::copy)
+	else if (current_operation.opcode == opcodes::copy)
 	{
 		if (!has_pre_operation)
 		{
@@ -275,15 +277,45 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 			std::printf("called copy into an invalid location \n");
 			return return_codes::error;
 		}
-		
+
 		this->stack.at(new_stack_location) = prev_operation.value(); //set stack location to previous operation
+	}
+	else if (current_operation.opcode == opcodes::test_eq)
+	{
+		if (!has_double_operations)
+		{
+			std::printf("called opcode test_eq, but missing prev / next operation \n");
+			return return_codes::error;
+		}
+
+		const bool are_both_numbers = prev_operation.value().opcode == opcodes::const_int && next_operation.value().opcode == opcodes::const_int;
+
+		if (!are_both_numbers)
+		{
+			std::printf("called test_eq, but not both operations are numbers \n");
+			return return_codes::error;
+		}
+
+		const int prev_num = prev_operation.value().arg;
+		const int next_num = next_operation.value().arg;
+
+		stack.erase(stack.begin() + current_stack_location);
+		stack.erase(stack.begin() + current_stack_location - 1);
+		stack.erase(stack.begin() + current_stack_location - 1);
+		
+		const auto operation_result = c_operation{ opcodes::const_int, (prev_num == next_num) };
+		stack.insert(stack.begin() + current_stack_location - 1, operation_result); //set the "next" operation to our result
+		
+		const auto nop = c_operation{ opcodes::nop, 0 };
+		stack.insert(stack.begin() + current_stack_location - 1, nop);
+		stack.insert(stack.begin() + current_stack_location - 1, nop);
 	}
 	return return_codes::success;
 }
 
 void c_interpreter::result_handler(return_codes result)
 {
-	if(result == return_codes::error)
+	if (result == return_codes::error)
 	{
 		std::printf("error thrown at stack location %i, opcode at this location is %s \n", this->current_stack_location, this->stack.at(this->current_stack_location).to_string().c_str());
 		return;

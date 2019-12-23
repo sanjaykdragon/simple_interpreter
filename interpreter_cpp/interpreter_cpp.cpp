@@ -25,8 +25,11 @@ int main(int argc, char* argv[])
 		c_operation{opcodes::const_int, 92293313}, // 12
 		c_operation{opcodes::copy, -4}, // 13 - copys the operation above into line 9
 
-		c_operation{opcodes::const_int, 1}, // 14
-		c_operation{opcodes::jump_if, -7} // 15 - jumps back to the newly assigned line 9
+		c_operation{opcodes::const_int, 1999}, // 14
+		c_operation{opcodes::test_eq, 0}, // 15 - checks if prev and next num are the same
+		c_operation{opcodes::const_int, 2003}, // 16
+		c_operation{opcodes::jump_if, -9}, // 17 - jumps back to the newly assigned line 9
+		c_operation{opcodes::end_program, 0} // 18
 	};
 
 	//create a "new program" with a new stack
