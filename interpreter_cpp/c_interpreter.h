@@ -61,19 +61,27 @@ class c_operation
 public:
 	opcodes opcode;
 	int arg;
-	std::string to_string() const
+	std::string opcode_text_name;
+	std::string to_string()
 	{
 		return "opcode: " + opcode_to_str() + " arg: " + std::to_string(arg);
 	}
 private:
-	[[nodiscard]] std::string opcode_to_str() const
+	[[nodiscard]] std::string opcode_to_str()
 	{
-		for(const auto translate : translatable_operations)
+		if (opcode_text_name.empty())
 		{
-			if (translate.opcode_type == opcode)
-				return translate.operation_text_name;
+			for (const auto& translate : translatable_operations)
+			{
+				if (translate.opcode_type == opcode)
+				{
+					opcode_text_name = translate.operation_text_name;
+					return translate.operation_text_name;
+				}
+			}
+			return "unknown opcode";
 		}
-		return "unknown opcode"
+		return opcode_text_name;
 	}
 };
 
@@ -96,9 +104,19 @@ private:
 	[[nodiscard]] opcodes get_opcode_from_str(const std::string& str) const;
 	
 	using maybe_operation = std::optional<c_operation>;
-	return_codes execute_operation(maybe_operation prev_operation, c_operation current_operation, maybe_operation next_operation);
+	return_codes execute_operation(maybe_operation prev_operation, const c_operation& current_operation, maybe_operation next_operation);
 	void result_handler(return_codes result);
 	int current_stack_location;
+
+	void stack_remove(size_t i)
+	{
+		this->stack.erase(stack.begin() + i);
+	}
+
+	void stack_add(size_t pos, c_operation op)
+	{
+		this->stack.insert(stack.begin() + pos, op);
+	}
 	
 	std::deque<c_operation> stack;
 };

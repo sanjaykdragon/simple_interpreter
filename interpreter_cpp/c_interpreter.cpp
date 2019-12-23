@@ -160,21 +160,15 @@ opcodes c_interpreter::get_opcode_from_str(const std::string& str) const
 				return translate_op.opcode_type;
 		}
 	}
-	std::vector < std::pair<std::string, int> > costs = {};
+	std::pair<std::string, int> lowest = std::make_pair("unknown", 99999);
 	for (const auto& translate_op : translatable_operations)
 	{
 		for (const auto& name : translate_op.text_names)
 		{
 			const int cost = lev_dist(trimmed_str.c_str(), trimmed_str.length(), name.c_str(), name.length()); //use Levenshtein distance to figure out which keyword this might represent
-			costs.emplace_back(std::make_pair(name, cost));
+			if (cost < lowest.second)
+				lowest = std::make_pair(name, cost);
 		}
-	}
-
-	std::pair<std::string, int> lowest = std::make_pair("unknown", 99999);
-	for (const auto& n : costs)
-	{
-		if (n.second < lowest.second)
-			lowest = n;
 	}
 
 	std::printf("unknown opcode %s, did you mean %s? \n", trimmed_str.c_str(), lowest.first.c_str());
@@ -182,7 +176,7 @@ opcodes c_interpreter::get_opcode_from_str(const std::string& str) const
 	return opcodes::nop;
 }
 
-return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_operation current_operation, maybe_operation next_operation)
+return_codes c_interpreter::execute_operation(maybe_operation prev_operation, const c_operation& current_operation, maybe_operation next_operation)
 {
 	if (current_operation.opcode == opcodes::end_program)
 		return return_codes::end;
@@ -208,25 +202,25 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 			return return_codes::error;
 		}
 
-		stack.erase(stack.begin() + current_stack_location);
-		stack.erase(stack.begin() + current_stack_location - 1);
-		stack.erase(stack.begin() + current_stack_location - 1); //remove the 3 prev operations - const_int (n1), add, const_int (n2)
+		this->stack_remove(current_stack_location);
+		this->stack_remove(current_stack_location - 1);
+		this->stack_remove(current_stack_location - 1); //remove the 3 prev operations - const_int (n1), add, const_int (n2)
 
 		const int prev_num = prev_operation.value().arg; //n1
 		const int next_num = next_operation.value().arg; //n2
 		if (current_operation.opcode == opcodes::add)
 		{
 			const auto operation_result = c_operation{ opcodes::const_int, prev_num + next_num }; //do the operation
-			stack.insert(stack.begin() + current_stack_location - 1, operation_result); //put the result back onto the stack
+			this->stack_add(current_stack_location - 1, operation_result); //put the result back onto the stack
 		}
 		else if (current_operation.opcode == opcodes::sub)
 		{
 			const auto operation_result = c_operation{ opcodes::const_int, prev_num - next_num }; //do the operation
-			stack.insert(stack.begin() + current_stack_location - 1, operation_result); //put the result back onto the stack
+			this->stack_add(current_stack_location - 1, operation_result); //put the result back onto the stack
 		}
 		const auto nop = c_operation{ opcodes::nop, 0 };
-		stack.insert(stack.begin() + current_stack_location - 1, nop);
-		stack.insert(stack.begin() + current_stack_location - 1, nop); //I do this so the stack keeps its original size
+		this->stack_add(current_stack_location - 1, nop);
+		this->stack_add(current_stack_location - 1, nop); //I do this so the stack keeps its original size
 	}
 	else if (current_operation.opcode == opcodes::print)
 	{
@@ -326,16 +320,17 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 		const int prev_num = prev_operation.value().arg;
 		const int next_num = next_operation.value().arg;
 
-		stack.erase(stack.begin() + current_stack_location);
-		stack.erase(stack.begin() + current_stack_location - 1);
-		stack.erase(stack.begin() + current_stack_location - 1);
+
+		this->stack_remove(current_stack_location);
+		this->stack_remove(current_stack_location - 1);
+		this->stack_remove(current_stack_location - 1);
 
 		const auto operation_result = c_operation{ opcodes::const_int, (prev_num == next_num) };
-		stack.insert(stack.begin() + current_stack_location - 1, operation_result); //set the "next" operation to our result
+		this->stack_add(current_stack_location - 1, operation_result); //set the "next" operation to our result
 
 		const auto nop = c_operation{ opcodes::nop, 0 };
-		stack.insert(stack.begin() + current_stack_location - 1, nop);
-		stack.insert(stack.begin() + current_stack_location - 1, nop);
+		this->stack_add(current_stack_location - 1, nop);
+		this->stack_add(current_stack_location - 1, nop);
 	}
 	return return_codes::success;
 }
