@@ -81,6 +81,27 @@ std::deque<c_operation> c_interpreter::read_file(const std::string& filename) co
 	return new_stack;
 }
 
+int lev_dist(const char* s, int len_s, const char* t, int len_t) //https://en.wikipedia.org/wiki/Levenshtein_distance
+{
+	int cost;
+
+	/* base case: empty strings */
+	if (len_s == 0) return len_t;
+	if (len_t == 0) return len_s;
+
+	/* test if last characters of the strings match */
+	if (s[len_s - 1] == t[len_t - 1])
+		cost = 0;
+	else
+		cost = 1;
+
+	/* return minimum of delete char from s, delete char from t, and delete char from both */
+	const auto d_s = lev_dist(s, len_s - 1, t, len_t) + 1;
+	const auto d_t = lev_dist(s, len_s, t, len_t - 1) + 1;
+	const auto d_b = lev_dist(s, len_s - 1, t, len_t - 1) + cost;
+	return std::min(std::min(d_s, d_t), d_b); //https://stackoverflow.com/questions/9424173/find-the-smallest-amongst-3-numbers-in-c
+}
+
 c_operation c_interpreter::interpret_string(std::string str) const
 {
 	const static auto split_str = [&str](const char delim) -> std::vector<std::string> //https://stackoverflow.com/questions/9435385/split-a-string-using-c11
@@ -94,7 +115,7 @@ c_operation c_interpreter::interpret_string(std::string str) const
 		return elems;
 	};
 
-	auto str_array = split_str(' ');
+	const auto str_array = split_str(' ');
 	if (str_array.size() < 2)
 	{
 		std::printf("[ERROR!] error when trying to interpret line: %s, assumed nop \n", str.c_str());
@@ -131,26 +152,32 @@ opcodes c_interpreter::get_opcode_from_str(const std::string& str) const
 	};
 	const auto trimmed_str = trim(str);
 
-	if (trimmed_str == "add")
-		return opcodes::add;
-	else if (trimmed_str == "sub")
-		return opcodes::sub;
-	else if (trimmed_str == "end_program" || trimmed_str == "end" || trimmed_str == "exit")
-		return opcodes::end_program;
-	else if (trimmed_str == "print")
-		return opcodes::print;
-	else if (trimmed_str == "i" || trimmed_str == "int" || trimmed_str == "integer" || trimmed_str == "iconst")
-		return opcodes::const_int;
-	else if (trimmed_str == "jump" || trimmed_str == "jmp")
-		return opcodes::jump;
-	else if (trimmed_str == "jump_if" || trimmed_str == "jmp_if")
-		return opcodes::jump_if;
-	else if (trimmed_str == "nop")
-		return opcodes::nop;
-	else if (trimmed_str == "copy")
-		return opcodes::copy;
-	else if (trimmed_str == "test_eq" || trimmed_str == "==")
-		return opcodes::test_eq;
+	for (const auto& translate_op : translatable_operations) //loop through all possible translations
+	{
+		for (const auto& name : translate_op.text_names) //loop through all possible names
+		{
+			if (name == trimmed_str)
+				return translate_op.opcode_type;
+		}
+	}
+	std::vector < std::pair<std::string, int> > costs = {};
+	for (const auto& translate_op : translatable_operations)
+	{
+		for (const auto& name : translate_op.text_names)
+		{
+			const int cost = lev_dist(trimmed_str.c_str(), trimmed_str.length(), name.c_str(), name.length()); //use Levenshtein distance to figure out which keyword this might represent
+			costs.emplace_back(std::make_pair(name, cost));
+		}
+	}
+
+	std::pair<std::string, int> lowest = std::make_pair("unknown", 99999);
+	for (const auto& n : costs)
+	{
+		if (n.second < lowest.second)
+			lowest = n;
+	}
+
+	std::printf("unknown opcode %s, did you mean %s? \n", trimmed_str.c_str(), lowest.first.c_str());
 
 	return opcodes::nop;
 }
@@ -302,10 +329,10 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 		stack.erase(stack.begin() + current_stack_location);
 		stack.erase(stack.begin() + current_stack_location - 1);
 		stack.erase(stack.begin() + current_stack_location - 1);
-		
+
 		const auto operation_result = c_operation{ opcodes::const_int, (prev_num == next_num) };
 		stack.insert(stack.begin() + current_stack_location - 1, operation_result); //set the "next" operation to our result
-		
+
 		const auto nop = c_operation{ opcodes::nop, 0 };
 		stack.insert(stack.begin() + current_stack_location - 1, nop);
 		stack.insert(stack.begin() + current_stack_location - 1, nop);
