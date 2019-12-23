@@ -26,5 +26,14 @@
     <ClInclude Include="c_interpreter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="c_operation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="c_translatable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ec_opcodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

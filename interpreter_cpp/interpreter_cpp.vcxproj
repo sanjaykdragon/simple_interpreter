@@ -159,6 +159,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="c_interpreter.h" />
+    <ClInclude Include="c_operation.h" />
+    <ClInclude Include="c_translatable.h" />
+    <ClInclude Include="ec_opcodes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
