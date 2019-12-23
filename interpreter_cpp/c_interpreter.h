@@ -42,6 +42,7 @@ public:
 	std::string operation_text_name;
 };
 
+//this is basically a list of - opcodes keywords, the opcodes they translate to, and the printable name
 const static std::array<c_operation_translate, 10> translatable_operations =
 {
 	c_operation_translate({"add", "+"}, opcodes::add, "add"),
@@ -104,16 +105,28 @@ private:
 	[[nodiscard]] opcodes get_opcode_from_str(const std::string& str) const;
 	
 	using maybe_operation = std::optional<c_operation>;
-	return_codes execute_operation(maybe_operation prev_operation, const c_operation& current_operation, maybe_operation next_operation);
+
+	maybe_operation get_prev_operation()
+	{
+		const auto pos = this->current_stack_location;
+		return pos - 1 < 0 ? c_operation{} : stack.at(pos - 1);
+	}
+	maybe_operation get_next_operation()
+	{
+		const auto pos = this->current_stack_location;
+		return pos + 1 >= stack.size() ? c_operation{} : stack.at(pos + 1);
+	}
+	
+	return_codes execute_operation(const c_operation& current_operation);
 	void result_handler(return_codes result);
 	int current_stack_location;
 
-	void stack_remove(size_t i)
+	void stack_remove(size_t pos)
 	{
-		this->stack.erase(stack.begin() + i);
+		this->stack.erase(stack.begin() + pos);
 	}
 
-	void stack_add(size_t pos, c_operation op)
+	void stack_add(size_t pos, const c_operation& op)
 	{
 		this->stack.insert(stack.begin() + pos, op);
 	}

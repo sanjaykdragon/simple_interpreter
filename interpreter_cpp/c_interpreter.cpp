@@ -25,10 +25,10 @@ void c_interpreter::execute_program()
 	for (int current_pos = 0; current_pos < stack.size(); current_pos++)
 	{
 		this->current_stack_location = current_pos;
-		const std::optional<c_operation> previous_operation = current_pos - 1 < 0 ? c_operation{} : stack.at(current_pos - 1);
+		
 		const auto current_operation = stack.at(current_pos);
-		const std::optional<c_operation> next_operation = current_pos + 1 >= stack.size() ? c_operation{} : stack.at(current_pos + 1);
-		const auto result = execute_operation(previous_operation, current_operation, next_operation);
+		const auto result = execute_operation(current_operation);
+		
 		operations_executed++;
 		if (result == return_codes::end)
 		{
@@ -36,8 +36,10 @@ void c_interpreter::execute_program()
 			break;
 		}
 		result_handler(result);
+		
 		current_pos = this->current_stack_location;
 	}
+	
 	std::printf("program ended. stack operations executed: %i, total stack size: %i \n", operations_executed, stack.size());
 }
 
@@ -176,10 +178,13 @@ opcodes c_interpreter::get_opcode_from_str(const std::string& str) const
 	return opcodes::nop;
 }
 
-return_codes c_interpreter::execute_operation(maybe_operation prev_operation, const c_operation& current_operation, maybe_operation next_operation)
+return_codes c_interpreter::execute_operation(const c_operation& current_operation)
 {
 	if (current_operation.opcode == opcodes::end_program)
 		return return_codes::end;
+
+	const auto prev_operation = get_prev_operation();
+	const auto next_operation = get_next_operation();
 
 	const bool has_pre_operation = prev_operation.has_value();
 	const bool has_next_operation = next_operation.has_value();
