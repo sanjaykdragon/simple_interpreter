@@ -1,5 +1,24 @@
 iconst 10
 add 0
-iconst 400
+iconst 1337
 print 0
+
+iconst 1337
+sub 0
+iconst 999
+print 0
+
+jump 4
+
+iconst 132345976
+print 0
+end_program 0
+
+iconst 92293313
+copy -4
+
+iconst 1999
+test_eq 0
+iconst 2003
+jump_if -9
 end_program 0
