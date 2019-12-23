@@ -4,7 +4,6 @@
 #include <optional>
 #include <utility>
 #include <filesystem>
-#include <fstream>
 
 
 enum class opcodes
@@ -16,7 +15,8 @@ enum class opcodes
 	sub,
 	jump,
 	jump_if,
-	nop
+	nop,
+	copy
 };
 
 enum class return_codes
@@ -62,6 +62,9 @@ private:
 		case opcodes::jump_if:
 			return "jump_if";
 			break;
+		case opcodes::copy:
+			return "copy";
+			break;
 		default:
 			return "unknown opcode";
 			break;
@@ -81,6 +84,7 @@ public:
 		stack = std::move(new_stack);
 	}
 	void execute_program();
+	void print_stack();
 private:
 	[[nodiscard]] std::deque<c_operation> read_file(const std::string& filename) const;
 	[[nodiscard]] c_operation interpret_string(std::string str) const;

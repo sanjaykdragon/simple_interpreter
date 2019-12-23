@@ -2,6 +2,7 @@
 #include <regex>
 #include <sstream>
 #include <utility>
+#include <fstream>
 
 c_interpreter::c_interpreter(std::deque<c_operation> new_stack): current_stack_location(0)
 {
@@ -40,6 +41,14 @@ void c_interpreter::execute_program()
 	std::printf("program ended. stack operations executed: %i, total stack size: %i \n", operations_executed, stack.size());
 }
 
+void c_interpreter::print_stack()
+{
+	for(auto op : this->stack)
+	{
+		std::printf("%s \n", op.to_string().c_str());
+	}
+}
+
 std::deque<c_operation> c_interpreter::read_file(const std::string& filename) const
 {
 	std::deque<c_operation> new_stack = {};
@@ -50,6 +59,20 @@ std::deque<c_operation> c_interpreter::read_file(const std::string& filename) co
 		while (std::getline(script_file, current_line)) {
 			//make line lowercase - https://en.cppreference.com/w/cpp/string/byte/tolower
 			std::transform(current_line.begin(), current_line.end(), current_line.begin(),[](unsigned char c) { return std::tolower(c); } );
+
+			const static auto trim = [](const std::string& str) -> std::string //https://stackoverflow.com/questions/25829143/trim-whitespace-from-a-string
+			{
+				const size_t first = str.find_first_not_of(' ');
+
+				if (first == std::string::npos)
+					return str;
+
+				const size_t last = str.find_last_not_of(' ');
+				return str.substr(first, (last - first + 1));
+			};
+
+			if (trim(current_line).empty()) //if line is completely whitespace
+				continue;
 			
 			new_stack.push_back(interpret_string(current_line));
 		}
@@ -124,6 +147,8 @@ opcodes c_interpreter::get_opcode_from_str(const std::string& str) const
 		return opcodes::jump_if;
 	else if (trimmed_str == "nop")
 		return opcodes::nop;
+	else if (trimmed_str == "copy")
+		return opcodes::copy;
 
 	return opcodes::nop;
 }
@@ -202,7 +227,7 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 			std::printf("called jump into an invalid location \n");
 			return return_codes::error;
 		}
-		this->current_stack_location = new_stack_location - 1;
+		this->current_stack_location = new_stack_location;
 	}
 	else if (current_operation.opcode == opcodes::jump_if)
 	{
@@ -232,8 +257,26 @@ return_codes c_interpreter::execute_operation(maybe_operation prev_operation, c_
 				std::printf("called jump_if into an invalid location \n");
 				return return_codes::error;
 			}
-			this->current_stack_location = new_stack_location - 1;
+			this->current_stack_location = new_stack_location;
 		}
+	}
+	else if(current_operation.opcode == opcodes::copy)
+	{
+		if (!has_pre_operation)
+		{
+			std::printf("called copy, but didn't have a previous operation \n");
+			return return_codes::error;
+		}
+
+		const auto new_stack_location = this->current_stack_location + current_operation.arg;
+		const bool is_valid_copy = new_stack_location > 0 && new_stack_location < this->stack.size();
+		if (!is_valid_copy)
+		{
+			std::printf("called copy into an invalid location \n");
+			return return_codes::error;
+		}
+		
+		this->stack.at(new_stack_location) = prev_operation.value(); //set stack location to previous operation
 	}
 	return return_codes::success;
 }
