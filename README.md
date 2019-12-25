@@ -14,10 +14,13 @@ credits to [code vm article](https://blog.usejournal.com/writing-a-simple-vm-in-
 
 all of these are a bit odd, the arguments they are assigned are actually + 1 of the argument (see void c_interpreter::execute_program()::21) because of the for loop.
 
-##### add / print / sub / end_program / nop / test_eq:
+##### add / sub / end_program / nop / test_eq:
 
 none of these check their arguments
 
 ##### const_int:
 
 currently only an int
+
+##### print:
+print relative stack location's arg
