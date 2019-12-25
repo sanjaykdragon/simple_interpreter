@@ -11,12 +11,14 @@ enum class return_codes
 {
 	success,
 	error,
+	warning,
 	end
 };
 
 class c_interpreter
 {
 public:
+	
 	explicit c_interpreter(std::deque<c_operation> new_stack);
 
 	explicit c_interpreter(const std::string& filename);
@@ -39,10 +41,21 @@ private:
 		const auto pos = this->current_stack_location;
 		return pos - 1 < 0 ? c_operation{} : stack.at(pos - 1);
 	}
+	
 	maybe_operation get_next_operation()
 	{
 		const auto pos = this->current_stack_location;
 		return pos + 1 >= stack.size() ? c_operation{} : stack.at(pos + 1);
+	}
+	
+	maybe_operation get_operation(const int pos)
+	{
+		const auto new_pos = this->current_stack_location + pos;
+		if (new_pos >= stack.size())
+			return c_operation{};
+		if (new_pos < 0)
+			return c_operation{};
+		return stack.at(new_pos);
 	}
 	
 	return_codes execute_operation(const c_operation& current_operation);

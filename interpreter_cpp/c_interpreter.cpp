@@ -229,13 +229,14 @@ return_codes c_interpreter::execute_operation(const c_operation& current_operati
 	}
 	else if (current_operation.opcode == opcodes::print)
 	{
-		if (!has_pre_operation)
+		const auto to_print = get_operation(current_operation.arg);
+		if (!to_print.has_value())
 		{
-			std::printf("called print, but didn't have a previous operation \n");
+			std::printf("called print, but didn't have a valid operation \n");
 			return return_codes::error;
 		}
 
-		const auto prev_opcode = prev_operation.value().opcode;
+		const auto prev_opcode = to_print.value().opcode;
 		const bool is_printable = prev_opcode == opcodes::const_int;
 
 		if (!is_printable)
@@ -244,7 +245,7 @@ return_codes c_interpreter::execute_operation(const c_operation& current_operati
 			return return_codes::error;
 		}
 
-		std::printf("print result: %i \n", prev_operation.value().arg);
+		std::printf("print result: %i \n", to_print.value().arg);
 	}
 	else if (current_operation.opcode == opcodes::jump)
 	{
